@@ -1,42 +1,83 @@
-# Directory.py
+# 🛠️ Colección de Scripts de Automatización
 
-## Descripción
-Este script genera una representación visual de la estructura de directorios y archivos de un proyecto, además de exportar la información en formato JSON. Utiliza la librería `rich` para mostrar la jerarquía con colores y símbolos.
+¡Bienvenido a este repositorio! Aquí encontrarás una colección de **scripts en Python** diseñados para automatizar tareas repetitivas, mejorar la productividad y facilitar el trabajo diario. 🚀
 
-## Características
-- Muestra la estructura de archivos y carpetas en la terminal.
-- Genera un archivo JSON con los detalles de cada archivo.
-- Ignora carpetas y archivos específicos.
+---
 
-## Requisitos
-Antes de ejecutar el script, asegúrate de tener instaladas las siguientes dependencias:
+## 📌 Características Principales
 
-```sh
-pip install rich
+✅ **Automatización de procesos comunes** para ahorrar tiempo.  
+✅ **Código modular y bien documentado** para fácil reutilización.  
+✅ **Uso de atajos de teclado y manipulación de datos.**  
+✅ **Compatible con Windows y Linux.**  
+✅ **Configuraciones personalizables.**  
+
+---
+
+## 📂 Estructura del Proyecto
+
+```
+📦 Scripts
+ ├── 📂 Directory             # Generación de estructura de directorios y archivos
+ │   ├── 📝 description_directory.md
+ │   └── 📄 prompt_directory.txt
+ ├── 📂 Glued                # Simulador de escritura automática
+ │   ├── 📝 description_glued.md
+ │   └── 🐍 glued.py
+ ├── 📜 README.md            # Documentación del proyecto
 ```
 
-## Uso
-Ejecuta el script en la terminal de la siguiente manera:
+Cada carpeta contiene un **script independiente** con su propia documentación y funcionalidad específica.
+
+---
+
+## 🚀 Instalación y Configuración
+
+### 1️⃣ Requisitos Previos
+
+Antes de ejecutar los scripts, instala las dependencias necesarias manualmente:
 
 ```sh
-python directory.py
+pip install keyboard pyperclip colorama pynput rich
 ```
 
-Por defecto, generará:
-- Un árbol visual de la estructura de archivos en la terminal.
-- Un archivo JSON con la información de cada archivo y carpeta.
+### 2️⃣ Uso de los Scripts
 
-## Personalización
-Puedes modificar la lista de carpetas y archivos a ignorar dentro del script:
+Ejecuta cualquier script desde la terminal con:
+
+```sh
+python ruta/del/script.py
+```
+
+Por ejemplo, para ejecutar `glued.py`:
+
+```sh
+python Glued/glued.py
+```
+
+---
+
+## 🎨 Personalización
+
+Algunos scripts permiten modificar configuraciones dentro del código o archivos de configuración, como listas de carpetas a ignorar, velocidad de escritura, etc.
+
+Ejemplo de configuración para `glued.py`:
 
 ```python
-carpetas_ignorar = ['.git', '__pycache__', 'node_modules', '.obsidian']
-archivos_ignorar = []
+keyboard.write(line, delay=0.05)  # Ajustar la velocidad de escritura
 ```
 
-## Autor
-Desarrollado por Yamil.
+---
 
-## Licencia
-Este proyecto está bajo la licencia MIT.
+## 📜 Licencia
+
+Este proyecto está bajo la **Licencia MIT**. Puedes usarlo, modificarlo y compartirlo libremente. 💡
+
+---
+
+## 📞 Contacto y Contribuciones
+
+Si deseas contribuir o tienes alguna sugerencia, no dudes en abrir un **issue** o un **pull request**. 😊
+
+💌 **Contacto:** [Tu correo o redes sociales]
 
