@@ -1,42 +1,25 @@
-# Directory.py
+# Pasos
+1. Abre una terminal y navega hasta la carpeta donde tienes el archivo directory.py.
 
-## Descripción
-Este script genera una representación visual de la estructura de directorios y archivos de un proyecto, además de exportar la información en formato JSON. Utiliza la librería `rich` para mostrar la jerarquía con colores y símbolos.
-
-## Características
-- Muestra la estructura de archivos y carpetas en la terminal.
-- Genera un archivo JSON con los detalles de cada archivo.
-- Ignora carpetas y archivos específicos.
-
-## Requisitos
-Antes de ejecutar el script, asegúrate de tener instaladas las siguientes dependencias:
-
-```sh
-pip install rich
-```
-
-## Uso
-Ejecuta el script en la terminal de la siguiente manera:
-
-```sh
-python directory.py
-```
-
-Por defecto, generará:
-- Un árbol visual de la estructura de archivos en la terminal.
-- Un archivo JSON con la información de cada archivo y carpeta.
-
-## Personalización
-Puedes modificar la lista de carpetas y archivos a ignorar dentro del script:
+2. Genera el ejecutable con el siguiente comando:
 
 ```python
-carpetas_ignorar = ['.git', '__pycache__', 'node_modules', '.obsidian']
-archivos_ignorar = []
+pip install pyinstaller
 ```
+- El parámetro --onefile crea un único archivo ejecutable.
 
-## Autor
-Desarrollado por Yamil.
+3. Encuentra el ejecutable:
 
-## Licencia
-Este proyecto está bajo la licencia MIT.
+- Después de ejecutar el comando, se creará una carpeta llamada dist en la misma ubicación que tu script.
 
+- Dentro de la carpeta dist, encontrarás el archivo ejecutable:
+
+    - En Windows: directory.exe.
+
+    - En Linux/macOS: directory.
+
+4. Mueve el ejecutable (opcional):
+
+- Puedes mover el archivo ejecutable a cualquier ubicación en tu sistema.
+
+- Si deseas ejecutarlo desde cualquier lugar, asegúrate de que la carpeta donde está el ejecutable esté en el PATH de tu sistema.
