@@ -29,12 +29,12 @@ def copiar_texto():
         mostrar_mensaje("No se pudo copiar texto o el portapapeles está vacío.", estilo="bold red")
 
 def pegar_texto():
-    """Espera 3 segundos y luego pega el texto del portapapeles rápidamente."""
+    """Espera 1 segundo y luego pega el texto del portapapeles rápidamente."""
     mostrar_mensaje("Preparándose para pegar...", estilo="bold cyan")
     
     # Cuenta regresiva antes de pegar
     with Progress() as progress:
-        tarea = progress.add_task("[cyan]Pegado en...", total=3)
+        tarea = progress.add_task("[cyan]Pegado en...", total=1)
         while not progress.finished:
             progress.update(tarea, advance=1)
             time.sleep(1)
