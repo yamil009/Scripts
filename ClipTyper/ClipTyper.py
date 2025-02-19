@@ -5,62 +5,148 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.text import Text
 from rich.progress import Progress
+from typing import Optional
+import sys
 
-# Inicializar Rich
-console = Console()
+class GestorPortapapeles:
+    def __init__(self):
+        self.console = Console()
+        self.configurar_atajos()
+        self.texto_anterior = ""
+        self.estilos = {
+            'exito': 'bold green',
+            'error': 'bold red',
+            'info': 'bold cyan',
+            'advertencia': 'bold yellow',
+            'normal': 'white',
+            'destacado': 'bold magenta'
+        }
 
-def mostrar_mensaje(mensaje, estilo="bold green", titulo=None):
-    """Muestra un mensaje en un panel con estilo."""
-    if titulo:
-        panel = Panel.fit(mensaje, title=titulo, style=estilo)
-    else:
-        panel = Panel.fit(mensaje, style=estilo)
-    console.print(panel)
+    def configurar_atajos(self):
+        try:
+            keyboard.add_hotkey('ctrl+c', self.copiar_texto)
+            keyboard.add_hotkey('ctrl+shift+insert', self.pegar_texto)
+            keyboard.add_hotkey('esc', self.salir)
+        except Exception as e:
+            self.mostrar_error(f"Error al configurar atajos: {str(e)}")
 
-def copiar_texto():
-    """Simula la acción de copiar (Ctrl+C) y muestra el texto copiado."""
-    keyboard.press_and_release('ctrl+c')
-    time.sleep(0.1)  # Espera breve para asegurar que el texto se copió
-    texto = pyperclip.paste()
-    
-    if texto:
-        mostrar_mensaje(repr(texto), titulo="Texto copiado", estilo="bold cyan")
-    else:
-        mostrar_mensaje("No se pudo copiar texto o el portapapeles está vacío.", estilo="bold red")
+    def mostrar_mensaje(self, mensaje: str, estilo: str = "white", titulo: Optional[str] = None):
+        try:
+            if titulo:
+                panel = Panel.fit(
+                    mensaje,
+                    title=titulo,
+                    style=estilo,
+                    border_style=estilo,
+                    title_align="center",
+                    subtitle_align="center",
+                    subtitle=f"[{estilo}] Subtítulo"
+                )
+            else:
+                panel = Panel.fit(
+                    mensaje,
+                    style=estilo,
+                    border_style=estilo
+                )
+            self.console.print(panel)
+        except Exception as e:
+            print(f"Error al mostrar mensaje: {str(e)}")
 
-def pegar_texto():
-    """Espera 1 segundo y luego pega el texto del portapapeles rápidamente."""
-    mostrar_mensaje("Preparándose para pegar...", estilo="bold cyan")
-    
-    # Cuenta regresiva antes de pegar
-    with Progress() as progress:
-        tarea = progress.add_task("[cyan]Pegado en...", total=1)
-        while not progress.finished:
-            progress.update(tarea, advance=1)
-            time.sleep(1)
-    
-    texto = pyperclip.paste()
-    if texto:
-        mostrar_mensaje(repr(texto), titulo="Texto a escribir", estilo="bold cyan")
-        mostrar_mensaje("Escribiendo...", estilo="bold green")
-        
-        # Escribir el texto completo de una vez (más rápido)
-        keyboard.write(texto)
-        
-        mostrar_mensaje("Texto pegado correctamente.", estilo="bold green")
-    else:
-        mostrar_mensaje("No hay texto en el portapapeles.", estilo="bold red")
+    def copiar_texto(self):
+        try:
+            keyboard.press_and_release('ctrl+c')
+            time.sleep(0.1)
+            texto = pyperclip.paste()
+            
+            if texto:
+                if texto != self.texto_anterior:
+                    self.texto_anterior = texto
+                    self.mostrar_mensaje(
+                        repr(texto),
+                        estilo=self.estilos['exito'],
+                        titulo="Texto copiado"
+                    )
+                else:
+                    self.mostrar_mensaje(
+                        "Texto ya copiado anteriormente",
+                        estilo=self.estilos['advertencia']
+                    )
+            else:
+                self.mostrar_error("No se pudo obtener texto del portapapeles.")
+        except Exception as e:
+            self.mostrar_error(f"Error al copiar: {str(e)}")
 
-# Configurar los atajos de teclado
-atajo_copiar = 'ctrl+c'
-atajo_pegar = 'ctrl+shift+insert'
-keyboard.add_hotkey(atajo_copiar, copiar_texto)
-keyboard.add_hotkey(atajo_pegar, pegar_texto)
+    def pegar_texto(self):
+        try:
+            self.mostrar_mensaje(
+                "Preparándose para pegar...",
+                estilo=self.estilos['info'],
+                titulo="Estado"
+            )
+            
+            with Progress() as progress:
+                task = progress.add_task("[cyan]Pegado en...", total=1)
+                while not progress.finished:
+                    progress.update(task, advance=1)
+                    time.sleep(1)
+            
+            texto = pyperclip.paste()
+            if texto:
+                self.mostrar_mensaje(
+                    repr(texto),
+                    estilo=self.estilos['destacado'],
+                    titulo="Texto a escribir"
+                )
+                self.mostrar_mensaje(
+                    "Escribiendo...",
+                    estilo=self.estilos['exito']
+                )
+                keyboard.write(texto)
+                self.mostrar_exito("Texto pegado correctamente.")
+            else:
+                self.mostrar_error("No hay texto en el portapapeles.")
+        except Exception as e:
+            self.mostrar_error(f"Error al pegar: {str(e)}")
 
-# Mensaje de inicio
-mostrar_mensaje("Script en ejecución", titulo="Estado", estilo="bold magenta")
-console.print(f"Usa [bold cyan]{atajo_copiar}[/] para copiar y [bold cyan]{atajo_pegar}[/] para pegar.", style="bold magenta")
-console.print("Presiona [bold red]ESC[/] para salir.", style="bold magenta")
+    def mostrar_error(self, mensaje: str):
+        self.mostrar_mensaje(mensaje, estilo=self.estilos['error'])
 
-# Mantener el script activo hasta que el usuario presione ESC
-keyboard.wait('esc')
+    def mostrar_exito(self, mensaje: str):
+        self.mostrar_mensaje(mensaje, estilo=self.estilos['exito'])
+
+    def iniciar(self):
+        try:
+            self.mostrar_mensaje(
+                "Script en ejecución",
+                estilo=self.estilos['destacado'],
+                titulo="Estado"
+            )
+            self.mostrar_mensaje(
+                "Usa Ctrl+C para copiar y Ctrl+Shift+Insert para pegar.",
+                estilo=self.estilos['info']
+            )
+            self.mostrar_mensaje(
+                "Presiona ESC para salir.",
+                estilo=self.estilos['error']
+            )
+            keyboard.wait('esc')
+        except KeyboardInterrupt:
+            self.mostrar_mensaje(
+                "Programa terminado por el usuario.",
+                estilo=self.estilos['advertencia']
+            )
+        except Exception as e:
+            self.mostrar_error(f"Error fatal: {str(e)}")
+        finally:
+            self.limpiar_recursos()
+
+    def limpiar_recursos(self):
+        keyboard.unhook_all()
+
+    def salir(self):
+        self.mostrar_mensaje("Saliendo...", estilo=self.estilos['advertencia'])
+        sys.exit()
+
+if __name__ == "__main__":
+    gestor = GestorPortapapeles()
+    gestor.iniciar()
