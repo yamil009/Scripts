@@ -1,4 +1,5 @@
 import os
+import sys
 import jsbeautifier
 import cssbeautifier
 import autopep8
@@ -41,7 +42,8 @@ class FormateadorProyecto:
                 funcion = formateador.beautify
                 
             elif ruta_archivo.endswith('.css'):
-                formateador = cssbeautifier
+                # Usar la función directamente de cssbeautifier
+                funcion = cssbeautifier.beautify
                 opciones = {
                     'indent_size': 4,
                     'indent_char': ' ',
@@ -83,27 +85,8 @@ class FormateadorProyecto:
                     'space_before_at_rule': False,
                     'space_after_at_rule': True,
                     'space_before_important': False,
-                    'space_after_important': True,
-                    'space_before_media_feature': False,
-                    'space_after_media_feature': True,
-                    'space_before_media_feature_colon': False,
-                    'space_after_media_feature_colon': True,
-                    'space_before_media_feature_value': False,
-                    'space_after_media_feature_value': True,
-                    'space_before_selector': False,
-                    'space_after_selector': True,
-                    'space_before_opening_brace': True,
-                    'space_after_opening_brace': False,
-                    'space_before_closing_brace': False,
-                    'space_after_closing_brace': True,
-                    'space_before_rule_set': False,
-                    'space_after_rule_set': True,
-                    'space_before_at_rule': False,
-                    'space_after_at_rule': True,
-                    'space_before_important': False,
                     'space_after_important': True
                 }
-                funcion = formateador.beautify
                 
             elif ruta_archivo.endswith('.html'):
                 opciones = {
@@ -259,7 +242,13 @@ class FormateadorProyecto:
             
         self.console.print("\n[bold cyan]📋 Detalles de los archivos procesados[/bold cyan]")
         self.console.print(table)
+        
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        self.console.print(f"\n[bold cyan]🕒 Fecha y hora: {timestamp}[/bold cyan]")
 
 if __name__ == "__main__":
     formateador = FormateadorProyecto()
-    formateador.formatear_proyecto(".")
+    if len(sys.argv) > 1:
+        formateador.formatear_proyecto(sys.argv[1])
+    else:
+        formateador.formatear_proyecto(".")
