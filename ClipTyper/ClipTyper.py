@@ -1,17 +1,26 @@
-import keyboard
+from textual.app import App, ComposeResult
+from textual.widgets import Header, Footer, Static
+from textual.containers import ScrollableContainer
 import pyperclip
+import keyboard
 import time
-from rich.console import Console
 from rich.panel import Panel
-from rich.text import Text
+from rich.syntax import Syntax
+from rich.console import Console
 from rich.progress import Progress
 from typing import Optional
 import sys
+from textual.reactive import reactive
+from textual.timer import Timer
 
-class GestorPortapapeles:
+class ClipboardApp(App):
     def __init__(self):
-        self.console = Console()
-        self.configurar_atajos()
+        super().__init__()
+        self.title = "ClipTyper"  # Cambiar el título de la aplicación
+        self.clipboard_content = Static("")
+        self.message_display = Static("")
+        self.timer: Timer | None = None
+        self.clipboard_text = reactive("")
         self.texto_anterior = ""
         self.estilos = {
             'exito': 'bold green',
@@ -21,67 +30,66 @@ class GestorPortapapeles:
             'normal': 'white',
             'destacado': 'bold magenta'
         }
+        self.configurar_atajos()
+
+    def compose(self) -> ComposeResult:
+        # Usar el Header sin el argumento show_clock si no es compatible
+        yield Header("📋 Mi Aplicación de Portapapeles")
+        yield ScrollableContainer(self.clipboard_content)
+        yield self.message_display
+        footer_text = Static("Desarrollado con Textual y Rich ✨")
+        yield Footer(footer_text)
+
+    def on_mount(self) -> None:
+        # Configurar un temporizador para actualizar el contenido del portapapeles cada segundo
+        self.timer = self.set_interval(1, self.update_clipboard_content)
+
+    def update_clipboard_content(self) -> None:
+        # Obtener el contenido actual del portapapeles
+        clipboard_text = pyperclip.paste()
+        if clipboard_text != self.clipboard_text:
+            self.clipboard_text = clipboard_text
+            # Crear un widget Syntax para mostrar el texto con apariencia de editor para JavaScript
+            syntax = Syntax(
+                clipboard_text,
+                "javascript",
+                theme="dracula",
+                line_numbers=True,
+                word_wrap=True,
+                indent_guides=True
+            )
+            # Crear un panel con el widget Syntax
+            panel = Panel(
+                syntax,
+                title="[bold cyan]Contenido del Portapapeles[/bold cyan]",
+                border_style="bold cyan"
+            )
+            # Actualizar el widget con el nuevo panel
+            self.clipboard_content.update(panel)
 
     def configurar_atajos(self):
         try:
-            keyboard.add_hotkey('ctrl+c', self.copiar_texto)
             keyboard.add_hotkey('ctrl+shift+insert', self.pegar_texto)
-            keyboard.add_hotkey('esc', self.salir)
         except Exception as e:
             self.mostrar_error(f"Error al configurar atajos: {str(e)}")
 
     def mostrar_mensaje(self, mensaje: str, estilo: str = "white", titulo: Optional[str] = None):
         try:
-            if titulo:
-                panel = Panel.fit(
-                    mensaje,
-                    title=titulo,
-                    style=estilo,
-                    border_style=estilo,
-                    title_align="center",
-                    subtitle_align="center",
-                    subtitle=f"[{estilo}] Subtítulo"
-                )
-            else:
-                panel = Panel.fit(
-                    mensaje,
-                    style=estilo,
-                    border_style=estilo
-                )
-            self.console.print(panel)
+            panel = Panel.fit(
+                mensaje,
+                style=estilo,
+                border_style=estilo
+            )
+            # Actualizar el widget de mensaje con el nuevo panel
+            self.message_display.update(panel)
         except Exception as e:
             print(f"Error al mostrar mensaje: {str(e)}")
-
-    def copiar_texto(self):
-        try:
-            keyboard.press_and_release('ctrl+c')
-            time.sleep(0.1)
-            texto = pyperclip.paste()
-            
-            if texto:
-                if texto != self.texto_anterior:
-                    self.texto_anterior = texto
-                    self.mostrar_mensaje(
-                        repr(texto),
-                        estilo=self.estilos['exito'],
-                        titulo="Texto copiado"
-                    )
-                else:
-                    self.mostrar_mensaje(
-                        "Texto ya copiado anteriormente",
-                        estilo=self.estilos['advertencia']
-                    )
-            else:
-                self.mostrar_error("No se pudo obtener texto del portapapeles.")
-        except Exception as e:
-            self.mostrar_error(f"Error al copiar: {str(e)}")
 
     def pegar_texto(self):
         try:
             self.mostrar_mensaje(
                 "Preparándose para pegar...",
-                estilo=self.estilos['info'],
-                titulo="Estado"
+                estilo=self.estilos['info']
             )
             
             with Progress() as progress:
@@ -94,8 +102,7 @@ class GestorPortapapeles:
             if texto:
                 self.mostrar_mensaje(
                     repr(texto),
-                    estilo=self.estilos['destacado'],
-                    titulo="Texto a escribir"
+                    estilo=self.estilos['destacado']
                 )
                 self.mostrar_mensaje(
                     "Escribiendo...",
@@ -114,39 +121,10 @@ class GestorPortapapeles:
     def mostrar_exito(self, mensaje: str):
         self.mostrar_mensaje(mensaje, estilo=self.estilos['exito'])
 
-    def iniciar(self):
-        try:
-            self.mostrar_mensaje(
-                "Script en ejecución",
-                estilo=self.estilos['destacado'],
-                titulo="Estado"
-            )
-            self.mostrar_mensaje(
-                "Usa Ctrl+C para copiar y Ctrl+Shift+Insert para pegar.",
-                estilo=self.estilos['info']
-            )
-            self.mostrar_mensaje(
-                "Presiona ESC para salir.",
-                estilo=self.estilos['error']
-            )
-            keyboard.wait('esc')
-        except KeyboardInterrupt:
-            self.mostrar_mensaje(
-                "Programa terminado por el usuario.",
-                estilo=self.estilos['advertencia']
-            )
-        except Exception as e:
-            self.mostrar_error(f"Error fatal: {str(e)}")
-        finally:
-            self.limpiar_recursos()
-
-    def limpiar_recursos(self):
-        keyboard.unhook_all()
-
     def salir(self):
         self.mostrar_mensaje("Saliendo...", estilo=self.estilos['advertencia'])
         sys.exit()
 
 if __name__ == "__main__":
-    gestor = GestorPortapapeles()
-    gestor.iniciar()
+    app = ClipboardApp()
+    app.run()
